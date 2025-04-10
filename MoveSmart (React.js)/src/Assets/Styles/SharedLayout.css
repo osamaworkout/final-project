@@ -1,0 +1,15 @@
+.shared-layout {
+  display: flex;
+  flex-direction: row-reverse;
+  height: 100vh;
+}
+
+  .main-content {
+    margin-left: 250px;
+    width: calc(100% - 250px);
+  }
+  
+  .page-content {
+    padding: 20px;
+  }
+  
