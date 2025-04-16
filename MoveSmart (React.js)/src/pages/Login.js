@@ -42,68 +42,70 @@ const Login = () => {
     //pls sir, don't forget del this after get api
     if (id === staticUser.id && password === staticUser.password) {
       console.log("تم تسجيل الدخول  ");
-      navigate("/dashboard");
+      navigate("/home");
       return;
     }
 
     try {
       const userData = await loginUser(id, password);
       console.log("تم تسجيل الدخول بنجاح (من API):", userData);
-      navigate("/dashboard");
+      navigate("/home");
     } catch (error) {
       setServerError(error.message || "فشل تسجيل الدخول ❌");
     }
   };
 
   return (
-    <div className="login-container">
-      <div className="login-header">تسجيل الدخول</div>
-      <div className="login-subheader">مرحبا</div>
-      <div className="login-description">
-        الرجاء إدخال بيانات الاعتماد الخاصة بك
+    <div className="bodylog">
+      <div className="login-container">
+        <div className="login-header">تسجيل الدخول</div>
+        <div className="login-subheader">مرحبا</div>
+        <div className="login-description">
+          الرجاء إدخال بيانات الاعتماد الخاصة بك
+        </div>
+
+        <form className="login-form" onSubmit={validateForm}>
+          <input
+            type="text"
+            value={id}
+            onChange={(e) => setId(e.target.value)}
+            className="login-input"
+            placeholder="الرقم القومي"
+            required
+          />
+          {idError && (
+            <div
+              className="error-message"
+              style={{ visibility: idError ? "visible" : "hidden" }}
+            >
+              {idError}
+            </div>
+          )}
+
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="login-input"
+            placeholder="كلمة المرور"
+            required
+          />
+          {passwordError && (
+            <div
+              className="error-message"
+              style={{ visibility: passwordError ? "visible" : "hidden" }}
+            >
+              {passwordError}
+            </div>
+          )}
+
+          <button type="submit" className="login-button">
+            تسجيل الدخول
+          </button>
+
+          {serverError && <div className="error-message">{serverError}</div>}
+        </form>
       </div>
-
-      <form className="login-form" onSubmit={validateForm}>
-        <input
-          type="text"
-          value={id}
-          onChange={(e) => setId(e.target.value)}
-          className="login-input"
-          placeholder="الرقم القومي"
-          required
-        />
-        {idError && (
-          <div
-            className="error-message"
-            style={{ visibility: idError ? "visible" : "hidden" }}
-          >
-            {idError}
-          </div>
-        )}
-
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="login-input"
-          placeholder="كلمة المرور"
-          required
-        />
-        {passwordError && (
-          <div
-            className="error-message"
-            style={{ visibility: passwordError ? "visible" : "hidden" }}
-          >
-            {passwordError}
-          </div>
-        )}
-
-        <button type="submit" className="login-button">
-          تسجيل الدخول
-        </button>
-
-        {serverError && <div className="error-message">{serverError}</div>}
-      </form>
     </div>
   );
 };
