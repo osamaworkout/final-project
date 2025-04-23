@@ -18,6 +18,7 @@ export default function AppRoutes() {
       <Route element={<SharedLayout />}>
         <Route path='/home' element={<Home />} />
         <Route path='/requests' element={<Requests />} />
+        <Route path='/carList' element={<carList />} />
        
       </Route>
     </Routes>

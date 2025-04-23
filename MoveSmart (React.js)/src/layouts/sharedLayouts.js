@@ -36,7 +36,7 @@ const SharedLayout = () => {
             </NavLink>
           </li>
           <li>
-            <NavLink to="cars" className={({ isActive }) => isActive ? "active" : ""}>
+            <NavLink to="carList" className={({ isActive }) => isActive ? "active" : ""}>
               <img src={carsicon} alt="" /> السيارات
             </NavLink>
           </li>
