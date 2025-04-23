@@ -56,6 +56,11 @@ const SharedLayout = () => {
             </NavLink>
           </li>
           <li>
+            <NavLink to="subscription" className={({ isActive }) => isActive ? "active" : ""}>
+              <img src={carmachineicon} alt="" /> الاشتراكات
+            </NavLink>
+          </li>
+          <li>
             <NavLink to="spareParts" className={({ isActive }) => isActive ? "active" : ""}>
               <img src={repairicon} alt="" /> قطع الغيار
             </NavLink>

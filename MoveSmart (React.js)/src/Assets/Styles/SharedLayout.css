@@ -14,7 +14,10 @@ body {
   padding: 15px;
   box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
   z-index: 100;
+  overflow-y: auto;
+  /* scrollbar-width: thin; */
 }
+
 
 .logo {
   font-size: 20px;
@@ -73,10 +76,11 @@ body {
 }
 
 .topbar {
-  width: calc(100% - 240px);
   position: fixed;
-  left: 0;
   top: 0;
+  right: 240px;  /* ✅ بعيد عن السايد بار */
+  left: 20px;    /* ✅ جاي ناحية الشمال */
+  width: auto;
   display: flex;
   justify-content: flex-end;
   align-items: center;

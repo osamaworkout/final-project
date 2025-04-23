@@ -1,72 +1,86 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import "../Assets/Styles/carList.css"
+import "../Assets/Styles/carList.css";
 
 const CarsPage = () => {
-    const [cars, setCars] = useState([]);
-    const [filteredCars, setFilteredCars] = useState([]);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [filter, setFilter] = useState("all");
-  
-    useEffect(() => {
+  const [cars, setCars] = useState([]);
+  const [filteredCars, setFilteredCars] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filter, setFilter] = useState("all");
+
+  const [showPopup, setShowPopup] = useState(false);
+  const [newCarData, setNewCarData] = useState({
+    id: "",
+    brand: "",
+    model: "",
+    type: "",
+    hospital: "",
+    status: "متاحة",
+  });
+
+  useEffect(() => {
+    loadCars();
+  }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [cars, searchTerm, filter]);
+
+  const loadCars = async () => {
+    try {
+      const response = await axios.get("/api/cars");
+      const data = response.data;
+      if (!Array.isArray(data)) {
+        console.error("البيانات المستلمة ليست في شكل مصفوفة", data);
+        return;
+      }
+      setCars(data);
+    } catch (error) {
+      console.error("خطأ في جلب البيانات:", error);
+    }
+  };
+
+  const applyFilters = () => {
+    let list = [...cars];
+    if (searchTerm) {
+      list = list.filter(
+        (car) =>
+          car.id.includes(searchTerm) ||
+          car.brand.toLowerCase().includes(searchTerm) ||
+          car.model.toLowerCase().includes(searchTerm) ||
+          car.type.toLowerCase().includes(searchTerm) ||
+          car.hospital.toLowerCase().includes(searchTerm) ||
+          car.status.toLowerCase().includes(searchTerm)
+      );
+    }
+    if (filter !== "all") {
+      list = list.filter((car) => car.status === filter);
+    }
+    setFilteredCars(list);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewCarData({ ...newCarData, [name]: value });
+  };
+
+  const handleSubmit = async () => {
+    try {
+      await axios.post("/api/cars", newCarData);
+      setShowPopup(false);
       loadCars();
-    }, []);
-  
-    useEffect(() => {
-      applyFilters();
-    }, [cars, searchTerm, filter]);
-  
-    const loadCars = async () => {
-      try {
-        const response = await axios.get("/api/cars");
-        const data = response.data;
-        if (!Array.isArray(data)) {
-          console.error("البيانات المستلمة ليست في شكل مصفوفة", data);
-          return;
-        }
-        setCars(data);
-      } catch (error) {
-        console.error("خطأ في جلب البيانات:", error);
-      }
-    };
-  
-    const applyFilters = () => {
-      let list = [...cars];
-      if (searchTerm) {
-        list = list.filter(
-          (car) =>
-            car.id.includes(searchTerm) ||
-            car.brand.toLowerCase().includes(searchTerm) ||
-            car.model.toLowerCase().includes(searchTerm) ||
-            car.type.toLowerCase().includes(searchTerm) ||
-            car.hospital.toLowerCase().includes(searchTerm) ||
-            car.status.toLowerCase().includes(searchTerm)
-        );
-      }
-      if (filter !== "all") {
-        list = list.filter((car) => car.status === filter);
-      }
-      setFilteredCars(list);
-    };
-  
-    const handleAddCar = async () => {
-      const newCar = {
-        id: "123",
-        brand: "تويوتا",
-        model: "كورولا",
-        type: "سيدان",
-        hospital: "الجامعة",
+      setNewCarData({
+        id: "",
+        brand: "",
+        model: "",
+        type: "",
+        hospital: "",
         status: "متاحة",
-      };
-      try {
-        const response = await axios.post("/api/cars", newCar);
-        if (response.status !== 201 && response.status !== 200)
-          throw new Error("خطأ في إضافة السيارة");
-        loadCars();
-      } catch (error) {
-        console.error("خطأ أثناء الإضافة:", error);
-      }
-    };
+      });
+    } catch (error) {
+      console.error("فشل في إضافة السيارة:", error);
+    }
+  };
 
   return (
     <div className="container">
@@ -117,7 +131,7 @@ const CarsPage = () => {
           <option value="متاحة">متاحة</option>
           <option value="غير متاحة">غير متاحة</option>
         </select>
-        <button onClick={handleAddCar}>+ إضافة سيارة</button>
+        <button onClick={() => setShowPopup(true)}>+ إضافة سيارة</button>
         <button onClick={loadCars}>🔄 تحديث</button>
       </div>
 
@@ -129,6 +143,27 @@ const CarsPage = () => {
         <span>المستشفى</span>
         <span>الحالة</span>
       </div>
+
+      {showPopup && (
+        <div className="popup-overlay">
+          <div className="popup">
+            <h3>إضافة سيارة جديدة</h3>
+            <input name="id" placeholder="رقم السيارة" onChange={handleInputChange} value={newCarData.id} />
+            <input name="brand" placeholder="الماركة" onChange={handleInputChange} value={newCarData.brand} />
+            <input name="model" placeholder="الموديل" onChange={handleInputChange} value={newCarData.model} />
+            <input name="type" placeholder="النوع" onChange={handleInputChange} value={newCarData.type} />
+            <input name="hospital" placeholder="المستشفى" onChange={handleInputChange} value={newCarData.hospital} />
+            <select name="status" onChange={handleInputChange} value={newCarData.status}>
+              <option value="متاحة">متاحة</option>
+              <option value="غير متاحة">غير متاحة</option>
+            </select>
+            <div className="popup-actions">
+              <button onClick={handleSubmit}>حفظ</button>
+              <button onClick={() => setShowPopup(false)}>إلغاء</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
