@@ -42,14 +42,14 @@ const Login = () => {
     //pls sir, don't forget del this after get api
     if (id === staticUser.id && password === staticUser.password) {
       console.log("تم تسجيل الدخول  ");
-      navigate("/home");
+      navigate("/role0");
       return;
     }
 
     try {
       const userData = await loginUser(id, password);
       console.log("تم تسجيل الدخول بنجاح (من API):", userData);
-      navigate("/home");
+      navigate("/role0");
     } catch (error) {
       setServerError(error.message || "فشل تسجيل الدخول ❌");
     }

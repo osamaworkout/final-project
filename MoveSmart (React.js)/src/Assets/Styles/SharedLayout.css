@@ -77,18 +77,22 @@ body {
 
 .topbar {
   position: fixed;
-  top: 0;
-  right: 240px;  /* ✅ بعيد عن السايد بار */
-  left: 20px;    /* ✅ جاي ناحية الشمال */
-  width: auto;
+  /* top: 0; */
+  right: 265px;  
+  left: 5px;   
+  /* width: auto; */
   display: flex;
-  justify-content: flex-end;
+  /* justify-content: space-between; */
   align-items: center;
   background-color: white;
   padding: 10px 20px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   flex-direction: row-reverse;
-  z-index: 99;
+  /* z-index: 99; */
+}
+.rx-1{
+  display: flex;
+  align-items: center;
 }
 
 .profile {
@@ -102,20 +106,21 @@ body {
 }
 
 .profile img {
-  width: 30px;
-  height: 30px;
+  width: 50px;
+  height: 40px;
   border-radius: 50%;
   margin-left: 10px;
 }
 
 .search-container {
   display: flex;
+  height:30px;
   align-items: center;
   background-color: #ecf0f1;
   padding: 8px 15px;
   border-radius: 20px;
-  width: 280px;
-  margin-right: 20px;
+  width: 115vh;
+  margin-left: 20px;
 }
 
 .search-container input {
@@ -132,12 +137,42 @@ body {
   cursor: pointer;
 }
 
-.notification {
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-  margin-right: 20px;
+.noti-btn{
+  background-color: #fff;
+  border: none;
 }
+
+.notification{
+  cursor: pointer;
+}
+
+.notification-popup {
+  position: absolute;
+  top: 60px;  
+  left: 10px; 
+  width: 200px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  z-index: 1000;
+}
+
+.notification-item {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-popup p {
+  text-align: center;
+  color: #666;
+}
+
 
 .content {
   margin-right: 260px;

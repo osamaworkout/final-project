@@ -1,82 +1,130 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 import "../Assets/Styles/Subscription.css"
 
-const initialSubscribers = [
-  { name: 'احمد حمدي', phone: '01204514948', status: 'متاحة' },
-  { name: 'احمد عادل', phone: '01204514948', status: 'متاحة' },
-  { name: 'عمر شعبان', phone: '01204514948', status: 'متاحة' },
-  { name: 'اسامة سيد', phone: '01204514948', status: 'متاحة' },
-];
-
-export default function SubscriberManagement() {
-  const [subscribers, setSubscribers] = useState(initialSubscribers);
-  const [filtered, setFiltered] = useState(initialSubscribers);
+export default function SubscribersPage() {
+  const [subscribers, setSubscribers] = useState([]);
+  const [filteredSubscribers, setFilteredSubscribers] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [showNameFilter, setShowNameFilter] = useState(false);
   const [showStatusFilter, setShowStatusFilter] = useState(false);
-  const [nameInput, setNameInput] = useState('');
+  const [newSubscriber, setNewSubscriber] = useState({
+    name: '',
+    phone: '',
+    job: '',
+    idNumber: ''
+  });
   const [notification, setNotification] = useState('');
-  const [newSub, setNewSub] = useState({ name: '', phone: '', job: '', id: '' });
 
   useEffect(() => {
-    setFiltered(subscribers);
-  }, [subscribers]);
+    fetchSubscribers();
+  }, []);
 
-  const handleAddSubscriber = () => setShowPopup(true);
-  const handleClosePopup = () => setShowPopup(false);
-
-  const handleSave = () => {
-    const { name, phone, job, id } = newSub;
-    if (!name) return showNote('يرجى إدخال الاسم');
-    if (!/^01[0-9]{9}$/.test(phone)) return showNote('يرجى إدخال رقم محمول صحيح مكوّن من 11 رقم ويبدأ بـ 01');
-    if (!job) return showNote('يرجى إدخال المسمى الوظيفي');
-    if (!/^[0-9]{14}$/.test(id)) return showNote('يرجى إدخال رقم قومي صحيح مكوّن من 14 رقم');
-
-    setSubscribers([...subscribers, { name, phone, status: 'متاحة' }]);
-    setNewSub({ name: '', phone: '', job: '', id: '' });
-    setShowPopup(false);
+  const fetchSubscribers = async () => {
+    try {
+      const response = await axios.get('https://your-backend-api.com/api/subscribers');
+      setSubscribers(response.data);
+      setFilteredSubscribers(response.data);
+    } catch (error) {
+      console.error('فشل تحميل البيانات:', error);
+      showNotification('حدث خطأ أثناء تحميل البيانات');
+    }
   };
 
-  const showNote = (msg) => {
-    setNotification(msg);
-    setTimeout(() => setNotification(''), 3000);
+  const renderSubscribers = () => {
+    return filteredSubscribers.map((sub) => (
+      <div key={sub.id} className="card" onClick={() => viewEmployeeDetails(sub.id)}>
+        <div>≡</div>
+        <div>{sub.phone}</div>
+        <div><span className="status-active">{sub.status}</span></div>
+        <div>{sub.name}</div>
+      </div>
+    ));
   };
 
-  const filterByName = () => {
-    setFiltered(subscribers.filter(s => s.name.includes(nameInput)));
-    setShowFilterMenu(false);
-    setShowNameFilter(false);
+  const viewEmployeeDetails = (id) => {
+    localStorage.setItem('selectedEmployeeId', id);
+    window.location.href = '../employeePage/index-1.html';
   };
 
-  const filterByStatus = (status) => {
-    setFiltered(subscribers.filter(s => s.status === status));
-    setShowFilterMenu(false);
+  const toggleNameFilter = () => {
+    setShowNameFilter(!showNameFilter);
     setShowStatusFilter(false);
   };
 
+  const toggleStatusFilter = () => {
+    setShowStatusFilter(!showStatusFilter);
+    setShowNameFilter(false);
+  };
+
+  const filterByName = (name) => {
+    const filtered = subscribers.filter((s) => s.name.includes(name));
+    setFilteredSubscribers(filtered);
+    closeFilters();
+  };
+
+  const filterByStatus = (status) => {
+    const filtered = subscribers.filter((s) => s.status === status);
+    setFilteredSubscribers(filtered);
+    closeFilters();
+  };
+
+  const closeFilters = () => {
+    setShowFilterMenu(false);
+    setShowNameFilter(false);
+    setShowStatusFilter(false);
+  };
+
+  const showNotification = (message) => {
+    setNotification(message);
+    setTimeout(() => {
+      setNotification('');
+    }, 3000);
+  };
+
+  const handleSave = () => {
+    const { name, phone, job, idNumber } = newSubscriber;
+
+    if (!name) return showNotification('يرجى إدخال الاسم');
+    if (!/^01[0-9]{9}$/.test(phone)) return showNotification('يرجى إدخال رقم محمول صحيح مكوّن من 11 رقم ويبدأ بـ 01');
+    if (!job) return showNotification('يرجى إدخال المسمى الوظيفي');
+    if (!/^[0-9]{14}$/.test(idNumber)) return showNotification('يرجى إدخال رقم قومي صحيح مكوّن من 14 رقم');
+
+    const newSub = { name, phone, job, idNumber, status: 'متاحة' };
+    setSubscribers([...subscribers, newSub]);
+    setFilteredSubscribers([...subscribers, newSub]);
+    setNewSubscriber({ name: '', phone: '', job: '', idNumber: '' });
+    setShowPopup(false);
+  };
+
   return (
-    <div className="container text-right">
+    <div className="container">
       <div className="header">
         <div className="actions">
-          <button onClick={handleAddSubscriber}>➕ إضافة مشترك</button>
+          <button onClick={() => setShowPopup(true)}>➕ إضافة مشترك</button>
           <button onClick={() => setShowFilterMenu(!showFilterMenu)}>🔽 فلتر</button>
-          <button onClick={() => setFiltered(subscribers)}>🔄 تحديث</button>
+          <button onClick={fetchSubscribers}>🔄 تحديث</button>
         </div>
-        <div className="total">إجمالي المشتركين <span>{filtered.length}</span></div>
+        <div className="total">
+          إجمالي المشتركين <span>{filteredSubscribers.length}</span>
+        </div>
       </div>
 
       {showFilterMenu && (
         <div className="filter-menu">
-          <div onClick={() => { setShowNameFilter(!showNameFilter); setShowStatusFilter(false); }}>الاسم</div>
-          <div onClick={() => { setShowStatusFilter(!showStatusFilter); setShowNameFilter(false); }}>الحالة</div>
+          <div onClick={toggleNameFilter}>الاسم</div>
+          <div onClick={toggleStatusFilter}>الحالة</div>
         </div>
       )}
 
       {showNameFilter && (
         <div className="filter-input">
-          <input type="text" placeholder="أدخل الاسم" value={nameInput} onChange={e => setNameInput(e.target.value)} />
-          <button onClick={filterByName}>بحث</button>
+          <input
+            type="text"
+            placeholder="أدخل الاسم"
+            onChange={(e) => filterByName(e.target.value)}
+          />
         </div>
       )}
 
@@ -91,23 +139,17 @@ export default function SubscriberManagement() {
         <thead>
           <tr>
             <th></th>
+            <th>اسم المشترك</th>
             <th>رقم الهاتف</th>
             <th>حالة الاشتراك</th>
-            <th>اسم المشترك</th>
+            
           </tr>
         </thead>
-        <tbody>
-          {filtered.map((sub, i) => (
-            <tr key={i}>
-              <td>≡</td>
-              <td>{sub.phone}</td>
-              <td><span className="status-active">{sub.status}</span></td>
-              <td>{sub.name}</td>
-            </tr>
-          ))}
-        </tbody>
       </table>
 
+      <div className="cards-container">{renderSubscribers()}</div>
+
+      {/* Popup */}
       {showPopup && (
         <div className="popup">
           <div className="popup-content">
@@ -116,19 +158,35 @@ export default function SubscriberManagement() {
             <div className="form-grid">
               <div>
                 <label>رقم المحمول</label>
-                <input type="text" value={newSub.phone} onChange={e => setNewSub({ ...newSub, phone: e.target.value })} />
+                <input
+                  type="text"
+                  value={newSubscriber.phone}
+                  onChange={(e) => setNewSubscriber({ ...newSubscriber, phone: e.target.value })}
+                />
               </div>
               <div>
                 <label>الاسم</label>
-                <input type="text" value={newSub.name} onChange={e => setNewSub({ ...newSub, name: e.target.value })} />
+                <input
+                  type="text"
+                  value={newSubscriber.name}
+                  onChange={(e) => setNewSubscriber({ ...newSubscriber, name: e.target.value })}
+                />
               </div>
               <div>
                 <label>المسمى الوظيفي</label>
-                <input type="text" value={newSub.job} onChange={e => setNewSub({ ...newSub, job: e.target.value })} />
+                <input
+                  type="text"
+                  value={newSubscriber.job}
+                  onChange={(e) => setNewSubscriber({ ...newSubscriber, job: e.target.value })}
+                />
               </div>
               <div>
                 <label>الرقم القومي</label>
-                <input type="text" value={newSub.id} onChange={e => setNewSub({ ...newSub, id: e.target.value })} />
+                <input
+                  type="text"
+                  value={newSubscriber.idNumber}
+                  onChange={(e) => setNewSubscriber({ ...newSubscriber, idNumber: e.target.value })}
+                />
               </div>
             </div>
             <button onClick={handleSave}>حفظ</button>
@@ -137,4 +195,4 @@ export default function SubscriberManagement() {
       )}
     </div>
   );
-};
+}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import "../Assets/Styles/consumables.css";
+import "../Assets/Styles/spareparts.css";
 
-const PartsPage = () => {
+const sparePats = () => {
   const [parts, setParts] = useState([]);
   const [editIndex, setEditIndex] = useState(null);
   const [newPartData, setNewPartData] = useState({
@@ -15,7 +15,6 @@ const PartsPage = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // جلب البيانات من API
   const fetchParts = async () => {
     try {
       const response = await fetch('YOUR_API_URL_HERE'); // عدل الرابط هنا
@@ -95,7 +94,7 @@ const PartsPage = () => {
     try {
       if (editIndex === null) {
         // إضافة قطعة جديدة
-        await fetch('Api_Link', {
+        await fetch('YOUR_API_URL_HERE', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(part)
@@ -103,7 +102,7 @@ const PartsPage = () => {
       } else {
         // تعديل قطعة
         const existing = parts[editIndex];
-        await fetch(`Api_Link/${existing.id}`, {
+        await fetch(`YOUR_API_URL_HERE/${existing.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(part)
@@ -128,10 +127,10 @@ const PartsPage = () => {
 
   return (
     <div className="container">
-      <h1 className="page-title">المستهلكات</h1>
+      <h1 className="page-title">قطع الغيار</h1>
 
       <div className="header">
-        <h2>إجمالي المستهلكات: <span>{parts.length}</span></h2>
+        <h2>إجمالي قطع الغيار: <span>{parts.length}</span></h2>
         <div className="actions">
           <button onClick={() => setShowPopup(true)}>➕ إضافة</button>
           <button onClick={fetchParts}>🔄 تحديث</button>
@@ -209,4 +208,4 @@ const PartsPage = () => {
   );
 };
 
-export default PartsPage;
+export default sparePats;
