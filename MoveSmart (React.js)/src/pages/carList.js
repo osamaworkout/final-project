@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { Link } from "react-router-dom";
 import "../Assets/Styles/carList.css";
+import api from "../services/api";
 
 const CarsPage = () => {
   const [cars, setCars] = useState([]);
@@ -28,7 +29,7 @@ const CarsPage = () => {
 
   const loadCars = async () => {
     try {
-      const response = await axios.get("/api/cars");
+      const response = await api.get("/api/Buses/All");
       const data = response.data;
       if (!Array.isArray(data)) {
         console.error("البيانات المستلمة ليست في شكل مصفوفة", data);
@@ -66,7 +67,7 @@ const CarsPage = () => {
 
   const handleSubmit = async () => {
     try {
-      await axios.post("/api/cars", newCarData);
+      await api.post("/api/Buses", newCarData);
       setShowPopup(false);
       loadCars();
       setNewCarData({
@@ -93,7 +94,8 @@ const CarsPage = () => {
         {filteredCars.map((car, index) => (
           <div key={index} className="card">
             <p>
-              <strong>رقم السيارة:</strong> <a href="#">{car.id}</a>
+              <strong>رقم السيارة:</strong>{" "}
+              <Link to={`/car-management/${car.id}`}>{car.id}</Link> {/* ⬅️ التعديل */}
             </p>
             <p>
               <strong>الماركة:</strong> {car.brand}

@@ -1,21 +1,49 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { useParams } from "react-router-dom";
+import api from "../services/api";
 import "../Assets/Styles/cardetails.css";
 
 const CarManagement = () => {
+  const { busID } = useParams();
   const [activeTab, setActiveTab] = useState("car-info");
   const [carData, setCarData] = useState(null);
+  const [formData, setFormData] = useState({});
 
   useEffect(() => {
-    axios
-      .get("carData.json") 
+    if (!busID) return;
+
+    api
+      .get(`/api/Buses/ByID/${busID}`)
       .then((res) => {
-        setCarData(res.data); 
+        setCarData(res.data);
+        setFormData(res.data); // ننسخ البيانات للفورم
       })
       .catch((err) => {
         console.error("Error loading car data:", err);
       });
-  }, []);
+  }, [busID]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSave = () => {
+    if (!busID) return;
+
+    api
+      .put(`/api/Buses/${busID}`, formData)
+      .then(() => {
+        alert("✅ تم حفظ التعديلات بنجاح");
+      })
+      .catch((err) => {
+        console.error("❌ فشل الحفظ:", err);
+        alert("حدث خطأ أثناء الحفظ");
+      });
+  };
 
   const handlePrint = () => {
     const printContent = document.getElementById(activeTab);
@@ -43,8 +71,7 @@ const CarManagement = () => {
     `;
     document.body.appendChild(popup);
 
-    const closeButton = popup.querySelector(".close-btn");
-    closeButton.addEventListener("click", () => {
+    popup.querySelector(".close-btn").addEventListener("click", () => {
       document.body.removeChild(popup);
     });
   };
@@ -107,30 +134,22 @@ const CarManagement = () => {
             />
             <div className="driver-details-container">
               <h2 id="car-number">رقم السيارة</h2>
-              <p id="car-make">
-                الماركة: {carData?.carBrand || "غير متوفر"}
-              </p>
-              <p id="car-model">
-                الموديل: {carData?.carModel || "غير متوفر"}
-              </p>
-              <p id="car-type">
-                نوع السيارة: {carData?.carType || "غير متوفر"}
-              </p>
+              <p id="car-make">الماركة: {carData?.carBrand || "غير متوفر"}</p>
+              <p id="car-model">الموديل: {carData?.carModel || "غير متوفر"}</p>
+              <p id="car-type">نوع السيارة: {carData?.carType || "غير متوفر"}</p>
             </div>
           </div>
 
           <div className="km-box">
             <p>
-              إجمالي الكيلومترات: <span id="total-km">0 KM</span>
+              إجمالي الكيلومترات:{" "}
+              <span id="total-km">{carData?.totalKM || 0} KM</span>
             </p>
           </div>
         </div>
 
         <div className="left-side">
-          <button
-            className="back-btn"
-            onClick={() => window.history.back()}
-          >
+          <button className="back-btn" onClick={() => window.history.back()}>
             ⬅ رجوع
           </button>
           <div className="actions">
@@ -163,19 +182,25 @@ const CarManagement = () => {
             سجل الصيانة
           </button>
         </div>
-        {activeTab === "car-info" && <button className="save-btn">✅ حفظ</button>}
+        {activeTab === "car-info" && (
+          <button className="save-btn" onClick={handleSave}>
+            ✅ حفظ
+          </button>
+        )}
       </div>
 
       {activeTab === "car-info" && (
         <div className="tab-content" id="car-info">
           <div className="form-container">
+            {/* العمود الأول */}
             <div className="column">
               <div className="input-group">
                 <label>رقم السيارة:</label>
                 <input
                   type="text"
                   name="carNumber"
-                  defaultValue={carData?.carNumber || ""}
+                  value={formData.carNumber || ""}
+                  onChange={handleInputChange}
                 />
               </div>
               <div className="input-group">
@@ -183,7 +208,8 @@ const CarManagement = () => {
                 <input
                   type="text"
                   name="carBrand"
-                  defaultValue={carData?.carBrand || ""}
+                  value={formData.carBrand || ""}
+                  onChange={handleInputChange}
                 />
               </div>
               <div className="input-group">
@@ -191,7 +217,8 @@ const CarManagement = () => {
                 <input
                   type="text"
                   name="carModel"
-                  defaultValue={carData?.carModel || ""}
+                  value={formData.carModel || ""}
+                  onChange={handleInputChange}
                 />
               </div>
               <div className="input-group">
@@ -199,52 +226,98 @@ const CarManagement = () => {
                 <input
                   type="text"
                   name="carType"
-                  defaultValue={carData?.carType || ""}
+                  value={formData.carType || ""}
+                  onChange={handleInputChange}
                 />
               </div>
               <div className="input-group">
                 <label>حالة السيارة:</label>
-                <input type="text" name="carCondition" />
+                <input
+                  type="text"
+                  name="carCondition"
+                  value={formData.carCondition || ""}
+                  onChange={handleInputChange}
+                />
               </div>
             </div>
+
+            {/* العمود الثاني */}
             <div className="column">
               <div className="input-group">
                 <label>الوظيفة:</label>
-                <input type="text" name="carFunction" />
+                <input
+                  type="text"
+                  name="carFunction"
+                  value={formData.carFunction || ""}
+                  onChange={handleInputChange}
+                />
               </div>
               <div className="input-group">
                 <label>المستشفى التابعة لها:</label>
-                <input type="text" name="hospital" />
+                <input
+                  type="text"
+                  name="hospital"
+                  value={formData.hospital || ""}
+                  onChange={handleInputChange}
+                />
               </div>
               <div className="input-group">
                 <label>معدل استهلاك الوقود:</label>
                 <input
                   type="text"
                   name="fuelConsumption"
-                  defaultValue={carData?.fuelConsumption || ""}
+                  value={formData.fuelConsumption || ""}
+                  onChange={handleInputChange}
                 />
               </div>
               <div className="input-group">
                 <label>معدل استهلاك الزيت:</label>
-                <input type="text" name="oilConsumption" />
+                <input
+                  type="text"
+                  name="oilConsumption"
+                  value={formData.oilConsumption || ""}
+                  onChange={handleInputChange}
+                />
               </div>
               <div className="input-group">
                 <label>نوع الوقود:</label>
-                <input type="text" name="fuelType" />
+                <input
+                  type="text"
+                  name="fuelType"
+                  value={formData.fuelType || ""}
+                  onChange={handleInputChange}
+                />
               </div>
             </div>
+
+            {/* العمود الثالث */}
             <div className="column">
               <div className="input-group">
                 <label>اسم السائق:</label>
-                <input type="text" name="driverName" />
+                <input
+                  type="text"
+                  name="driverName"
+                  value={formData.driverName || ""}
+                  onChange={handleInputChange}
+                />
               </div>
               <div className="input-group">
                 <label>رقم الهاتف:</label>
-                <input type="text" name="driverPhone" />
+                <input
+                  type="text"
+                  name="driverPhone"
+                  value={formData.driverPhone || ""}
+                  onChange={handleInputChange}
+                />
               </div>
               <div className="input-group">
                 <label>الرقم القومي:</label>
-                <input type="text" name="driverId" />
+                <input
+                  type="text"
+                  name="driverId"
+                  value={formData.driverId || ""}
+                  onChange={handleInputChange}
+                />
               </div>
             </div>
           </div>

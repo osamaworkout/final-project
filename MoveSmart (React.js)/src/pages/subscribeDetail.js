@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../Assets/Styles/subscribeDetail.css';
+import api from '../services/api';
 
 const EmployeeSubscription = () => {
     const [employeeData, setEmployeeData] = useState({
@@ -29,7 +30,7 @@ const EmployeeSubscription = () => {
             }
 
             try {
-                const response = await axios.get(`https://your-api.com/employees/${employeeId}`);
+                const response = await api.get(`/api/PatrolsSubscriptions/AllForEmployee/{employeeID}`);
                 setEmployeeData(response.data);
             } catch (error) {
                 console.error('Error:', error);

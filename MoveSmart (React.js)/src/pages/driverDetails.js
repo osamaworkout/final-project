@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "../Assets/Styles/driverDetails.css"
+import api from "../services/api";
 
 const DriverManagement = () => {
   const [driverData, setDriverData] = useState(null);
@@ -16,7 +17,7 @@ const DriverManagement = () => {
 
   const fetchDriverData = async () => {
     try {
-      const response = await axios.get("/api/driver"); // عدل الرابط حسب API بتاعتك
+      const response = await api.get("/api/Drivers/ByID/{driverID}");
       setDriverData(response.data);
       setVacations(response.data.vacations || []);
     } catch (error) {
@@ -31,7 +32,7 @@ const DriverManagement = () => {
     };
 
     try {
-      await axios.put("/api/driver", updatedDriver); // عدل الرابط حسب API بتاعتك
+      await api.put("/api/Drivers", updatedDriver);
       alert("✅ تم حفظ التعديلات بنجاح!");
       fetchDriverData();
     } catch (error) {
@@ -42,7 +43,7 @@ const DriverManagement = () => {
   const handleDelete = async () => {
     if (window.confirm("⚠ هل أنت متأكد من حذف بيانات السائق؟")) {
       try {
-        await axios.delete("/api/driver"); // عدل الرابط حسب API بتاعتك
+        await api.delete("/api/Drivers/ByID/{driverID}");
         alert("✅ تم حذف بيانات السائق!");
         window.location.reload();
       } catch (error) {

@@ -1,57 +1,66 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { loginUser } from "../services/authService";
+import { authService } from "../services/authService";
 import "../Assets/Styles/Login.css";
 
 const Login = () => {
-  const [id, setId] = useState("");
+  const [nationalId, setNationalId] = useState("");
   const [password, setPassword] = useState("");
   const [idError, setIdError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [serverError, setServerError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-
-  // static data until get api from {الفلاحين}
-  const staticUser = {
-    id: "12345678901234",
-    password: "password123",
-  };
 
   const validateForm = async (e) => {
     e.preventDefault();
     setServerError("");
+    setIdError("");
+    setPasswordError("");
 
     let isValid = true;
 
-    if (id.trim() === "" || id.length !== 14) {
-      setIdError("الرجاء إدخال الرقم القومي بشكل صحيح");
+    if (nationalId.trim() === "" || nationalId.length !== 14) {
+      setIdError("الرجاء إدخال الرقم القومي بشكل صحيح (14 رقمًا)");
       isValid = false;
-    } else {
-      setIdError("");
     }
 
     if (password.length < 6) {
       setPasswordError("الرجاء إدخال كلمة مرور لا تقل عن 6 أحرف");
       isValid = false;
-    } else {
-      setPasswordError("");
     }
 
     if (!isValid) return;
 
-    //pls sir, don't forget del this after get api
-    if (id === staticUser.id && password === staticUser.password) {
-      console.log("تم تسجيل الدخول  ");
-      navigate("/role0");
-      return;
-    }
+    setIsLoading(true);
 
     try {
-      const userData = await loginUser(id, password);
-      console.log("تم تسجيل الدخول بنجاح (من API):", userData);
-      navigate("/role0");
+      const result = await authService.login(nationalId, password);
+      
+      if (result.success) {
+        console.log("تم تسجيل الدخول بنجاح:", result.data);
+        
+        // التوجيه حسب الدور
+        switch(result.data.role) {
+          case 0:
+            navigate("/role0");
+            break;
+          case 1:
+            navigate("/role1");
+            break;
+          case 2:
+            navigate("/role2");
+            break;
+          default:
+            navigate("/");
+        }
+      } else {
+        setServerError(result.error);
+      }
     } catch (error) {
-      setServerError(error.message || "فشل تسجيل الدخول ❌");
+      setServerError(error.message || "حدث خطأ أثناء تسجيل الدخول");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -67,17 +76,15 @@ const Login = () => {
         <form className="login-form" onSubmit={validateForm}>
           <input
             type="text"
-            value={id}
-            onChange={(e) => setId(e.target.value)}
+            value={nationalId}
+            onChange={(e) => setNationalId(e.target.value)}
             className="login-input"
-            placeholder="الرقم القومي"
+            placeholder="الرقم القومي (14 رقمًا)"
             required
+            maxLength="14"
           />
           {idError && (
-            <div
-              className="error-message"
-              style={{ visibility: idError ? "visible" : "hidden" }}
-            >
+            <div className="error-message">
               {idError}
             </div>
           )}
@@ -89,18 +96,20 @@ const Login = () => {
             className="login-input"
             placeholder="كلمة المرور"
             required
+            minLength="6"
           />
           {passwordError && (
-            <div
-              className="error-message"
-              style={{ visibility: passwordError ? "visible" : "hidden" }}
-            >
+            <div className="error-message">
               {passwordError}
             </div>
           )}
 
-          <button type="submit" className="login-button">
-            تسجيل الدخول
+          <button 
+            type="submit" 
+            className="login-button"
+            disabled={isLoading}
+          >
+            {isLoading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
           </button>
 
           {serverError && <div className="error-message">{serverError}</div>}

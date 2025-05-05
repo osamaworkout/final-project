@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "../Assets/Styles/driver.css";
+import api from "../services/api";
 
 const DriverManagement = () => {
   const [drivers, setDrivers] = useState([]);
@@ -14,7 +15,7 @@ const DriverManagement = () => {
   async function fetchDrivers() {
     setIsLoading(true);
     try {
-      const { data } = await axios.get("/api/drivers");
+      const { data } = await api.get("/api/Drivers/All");
       setDrivers(data);
     } catch (error) {
       console.error("Error fetching drivers:", error);
@@ -26,7 +27,7 @@ const DriverManagement = () => {
   async function toggleStatus(event, driverId) {
     event.stopPropagation();
     try {
-      await axios.put(`/api/drivers/${driverId}/toggle`);
+      await api.put(`/api/Drivers/ByID/{driverID}`);
       fetchDrivers();
     } catch (error) {
       console.error("Error updating driver status:", error);
@@ -42,7 +43,7 @@ const DriverManagement = () => {
     };
 
     try {
-      await axios.post("/api/drivers", newDriver);
+      await api.post("/api/Drivers", newDriver);
       fetchDrivers();
     } catch (error) {
       console.error("Error adding driver:", error);

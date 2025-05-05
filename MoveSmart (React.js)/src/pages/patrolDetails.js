@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import "../Assets/Styles/patrolDetails.css"
+import api from '../services/api';
 
 export default function PatrolSystem() {
   const [activeTab, setActiveTab] = useState('patrol');
@@ -50,7 +51,7 @@ export default function PatrolSystem() {
 
   const fetchPatrolData = async () => {
     try {
-      const response = await axios.get('https://api.example.com/patrol');
+      const response = await api.get('/api/Patrols/{patrolID}');
       setPatrolData(prev => ({ ...prev, ...response.data }));
     } catch (error) {
       console.error('Error fetching patrol data:', error);
@@ -59,7 +60,7 @@ export default function PatrolSystem() {
 
   const fetchSubscribers = async () => {
     try {
-      const response = await axios.get('https://api.example.com/subscribers');
+      const response = await api.get('/api/Employees/WhoAreUsingBus/{busID}');
       setSubscribers(response.data);
     } catch (error) {
       console.error('Error fetching subscribers:', error);

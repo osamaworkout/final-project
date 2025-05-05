@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "../Assets/Styles/spareparts.css";
+import api from "../services/api";
 
-const sparePats = () => {
+const SpareParts = () => {
   const [parts, setParts] = useState([]);
   const [editIndex, setEditIndex] = useState(null);
   const [newPartData, setNewPartData] = useState({
@@ -10,18 +11,17 @@ const sparePats = () => {
     code: "",
     quantity: 0,
     lifetime: 0,
-    cost: 0
+    cost: 0,
   });
   const [showPopup, setShowPopup] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
   const fetchParts = async () => {
     try {
-      const response = await fetch('YOUR_API_URL_HERE'); // عدل الرابط هنا
-      const data = await response.json();
-      setParts(data);
+      const response = await api.get("/api/SpareParts/All");
+      setParts(response.data);
     } catch (err) {
-      console.error('حدث خطأ أثناء جلب البيانات:', err);
+      console.error("حدث خطأ أثناء جلب البيانات:", err);
     }
   };
 
@@ -29,27 +29,30 @@ const sparePats = () => {
     fetchParts();
   }, []);
 
-  // تحديث قائمة القطع
   const renderPartsList = () => {
-    return parts.filter(part => part.name.toLowerCase().includes(searchTerm.toLowerCase())).map((part, index) => (
-      <div key={index} className="part-card">
-        <input type="checkbox" onChange={() => toggleCard(index)} />
-        <span>{part.name}</span>
-        <button onClick={() => editPart(index)}>تعديل</button>
-        <button onClick={() => deletePart(index)}>حذف</button>
-      </div>
-    ));
+    return parts
+      .filter((part) =>
+        part.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .map((part, index) => (
+        <div key={index} className="part-card">
+          <input type="checkbox" onChange={() => toggleCard(index)} />
+          <span>{part.name}</span>
+          <button onClick={() => editPart(index)}>تعديل</button>
+          <button onClick={() => deletePart(index)}>حذف</button>
+        </div>
+      ));
   };
 
-  // إظهار أو إخفاء تفاصيل القطعة
   const toggleCard = (index) => {
     const card = document.getElementById(`card-${index}`);
+    const container = document.getElementById("cardsContainer");
     if (card) {
       card.remove();
     } else {
       const part = parts[index];
-      const div = document.createElement('div');
-      div.className = 'card';
+      const div = document.createElement("div");
+      div.className = "card";
       div.id = `card-${index}`;
       div.innerHTML = `
         <h3>${part.name}</h3>
@@ -61,66 +64,61 @@ const sparePats = () => {
           <p><strong>التكلفة:</strong> ${part.cost} جنيه</p>
         </div>
       `;
-      cardsContainer.appendChild(div);
+      container.appendChild(div);
     }
   };
 
-  // تعديل قطعة
   const editPart = (index) => {
     setEditIndex(index);
     setNewPartData(parts[index]);
     setShowPopup(true);
   };
 
-  // حذف قطعة
   const deletePart = async (index) => {
-    const confirmDelete = window.confirm('هل أنت متأكد أنك تريد حذف هذه القطعة؟');
+    const confirmDelete = window.confirm("هل أنت متأكد أنك تريد حذف هذه القطعة؟");
     if (!confirmDelete) return;
-    
+
     try {
       const part = parts[index];
-      await fetch(`YOUR_API_URL_HERE/${part.id}`, { method: 'DELETE' });
+      await api.delete(`/api/SpareParts/${part.id}`);
       setParts(parts.filter((_, i) => i !== index));
     } catch (err) {
-      console.error('فشل الحذف:', err);
+      console.error("فشل الحذف:", err);
     }
   };
 
-  // حفظ البيانات الجديدة
   const handleSubmit = async () => {
     const { name, carType, code, quantity, lifetime, cost } = newPartData;
     const part = { name, carType, code, quantity, lifetime, cost };
-    
+
     try {
       if (editIndex === null) {
-        // إضافة قطعة جديدة
-        await fetch('YOUR_API_URL_HERE', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(part)
-        });
+        await api.post("/api/SpareParts", part);
       } else {
-        // تعديل قطعة
         const existing = parts[editIndex];
-        await fetch(`YOUR_API_URL_HERE/${existing.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(part)
-        });
+        await api.put(`/api/SpareParts/${existing.id}`, part);
       }
       setShowPopup(false);
+      setEditIndex(null);
+      setNewPartData({
+        name: "",
+        carType: "",
+        code: "",
+        quantity: 0,
+        lifetime: 0,
+        cost: 0,
+      });
       fetchParts();
     } catch (err) {
-      console.error('فشل الحفظ:', err);
+      console.error("فشل الحفظ:", err);
     }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewPartData(prev => ({ ...prev, [name]: value }));
+    setNewPartData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // البحث
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
@@ -130,7 +128,9 @@ const sparePats = () => {
       <h1 className="page-title">قطع الغيار</h1>
 
       <div className="header">
-        <h2>إجمالي قطع الغيار: <span>{parts.length}</span></h2>
+        <h2>
+          إجمالي قطع الغيار: <span>{parts.length}</span>
+        </h2>
         <div className="actions">
           <button onClick={() => setShowPopup(true)}>➕ إضافة</button>
           <button onClick={fetchParts}>🔄 تحديث</button>
@@ -145,16 +145,14 @@ const sparePats = () => {
       </div>
 
       <div className="content">
-        <div className="parts-list">
-          {renderPartsList()}
-        </div>
+        <div className="parts-list">{renderPartsList()}</div>
         <div className="cards-container" id="cardsContainer"></div>
       </div>
 
       {showPopup && (
         <div id="addPartPopup" className="popup">
           <div className="popup-content">
-            <h3>{editIndex === null ? 'إضافة قطعة جديدة' : 'تعديل قطعة'}</h3>
+            <h3>{editIndex === null ? "إضافة قطعة جديدة" : "تعديل قطعة"}</h3>
             <label>اسم القطعة:</label>
             <input
               type="text"
@@ -199,7 +197,14 @@ const sparePats = () => {
             />
             <div className="popup-buttons">
               <button onClick={handleSubmit}>حفظ</button>
-              <button onClick={() => setShowPopup(false)}>إلغاء</button>
+              <button
+                onClick={() => {
+                  setShowPopup(false);
+                  setEditIndex(null);
+                }}
+              >
+                إلغاء
+              </button>
             </div>
           </div>
         </div>
@@ -208,4 +213,4 @@ const sparePats = () => {
   );
 };
 
-export default sparePats;
+export default SpareParts;

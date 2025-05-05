@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import "../Assets/Styles/Subscription.css"
+import api from '../services/api';
 
 export default function SubscribersPage() {
   const [subscribers, setSubscribers] = useState([]);
@@ -23,7 +24,7 @@ export default function SubscribersPage() {
 
   const fetchSubscribers = async () => {
     try {
-      const response = await axios.get('https://your-backend-api.com/api/subscribers');
+      const response = await api.get('/api/Employees/All');
       setSubscribers(response.data);
       setFilteredSubscribers(response.data);
     } catch (error) {

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import "../Assets/Styles/patrolList.css"; // لو عايز تغير الـ CSS الخاص بالصفحة الجديدة
+import "../Assets/Styles/patrolList.css";
+import api from '../services/api';
 
 const PatrolsPage = () => {
   const [patrols, setPatrols] = useState([]);
@@ -28,7 +29,7 @@ const PatrolsPage = () => {
 
   const loadPatrols = async () => {
     try {
-      const response = await axios.get("/api/patrols"); // تغيير الرابط للـ API الخاص بالدوريات
+      const response = await api.get("/api/Patrols/All");
       const data = response.data;
       if (!Array.isArray(data)) {
         console.error("البيانات المستلمة ليست في شكل مصفوفة", data);
@@ -66,7 +67,7 @@ const PatrolsPage = () => {
 
   const handleSubmit = async () => {
     try {
-      await axios.post("/api/patrols", newPatrolData); // إرسال البيانات عبر الـ API
+      await api.post("/api/Patrols", newPatrolData); // إرسال البيانات عبر الـ API
       setShowPopup(false);
       loadPatrols();
       setNewPatrolData({
