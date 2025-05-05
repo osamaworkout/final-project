@@ -4,7 +4,7 @@ import { authService } from "../services/authService";
 import "../Assets/Styles/Login.css";
 
 const Login = () => {
-  const [nationalId, setNationalId] = useState("");
+  const [nationalNo, setNationalId] = useState("");
   const [password, setPassword] = useState("");
   const [idError, setIdError] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -20,7 +20,7 @@ const Login = () => {
 
     let isValid = true;
 
-    if (nationalId.trim() === "" || nationalId.length !== 14) {
+    if (nationalNo.trim() === "" || nationalNo.length !== 14) {
       setIdError("الرجاء إدخال الرقم القومي بشكل صحيح (14 رقمًا)");
       isValid = false;
     }
@@ -35,7 +35,7 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const result = await authService.login(nationalId, password);
+      const result = await authService.login(nationalNo, password);
       
       if (result.success) {
         console.log("تم تسجيل الدخول بنجاح:", result.data);
@@ -76,7 +76,7 @@ const Login = () => {
         <form className="login-form" onSubmit={validateForm}>
           <input
             type="text"
-            value={nationalId}
+            value={nationalNo}
             onChange={(e) => setNationalId(e.target.value)}
             className="login-input"
             placeholder="الرقم القومي (14 رقمًا)"

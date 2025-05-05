@@ -29,7 +29,7 @@ const CarsPage = () => {
 
   const loadCars = async () => {
     try {
-      const response = await api.get("/api/Buses/All");
+      const response = await api.get("Buses/All");
       const data = response.data;
       if (!Array.isArray(data)) {
         console.error("البيانات المستلمة ليست في شكل مصفوفة", data);

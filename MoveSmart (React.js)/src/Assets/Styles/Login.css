@@ -54,7 +54,7 @@
   .error-message {
     color: red;
     font-size: 12px;
-    visibility: hidden;
+    /* visibility: hidden; */
     margin-top: -10px;
   }
   

@@ -1,23 +1,31 @@
 import axios from 'axios';
 
 const authAPI = axios.create({
-  baseURL: 'https://movesmartapi.runasp.net/api/Auth',
+  baseURL: '/api/v1',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
   }
 });
 
+authAPI.interceptors.request.use((config) => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export const authService = {
-  async login(nationalId, password) {
+  async login(nationalNo, password) {
     try {
-      const response = await authAPI.post('/api/v1/User', {
-        nationalId,
+      const response = await authAPI.post('/User/login', {
+        nationalNo,
         password
       });
-      
+
       this.setSession(response.data);
-      
+
       return {
         success: true,
         data: response.data
@@ -27,18 +35,21 @@ export const authService = {
     }
   },
 
-  async logout() {
+  logout() {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userData');
   },
 
   setSession(authData) {
     localStorage.setItem('authToken', authData.token);
-    localStorage.setItem('userData', JSON.stringify({
-      role: authData.role,
-      userId: authData.userId,
-      name: authData.name
-    }));
+    localStorage.setItem(
+      'userData',
+      JSON.stringify({
+        role: authData.role,
+        userId: authData.userId,
+        name: authData.name
+      })
+    );
   },
 
   getCurrentUser() {
@@ -52,7 +63,7 @@ export const authService = {
 
   handleAuthError(error) {
     let errorMessage = 'فشل تسجيل الدخول';
-    
+
     if (error.response) {
       switch (error.response.status) {
         case 400:
@@ -80,7 +91,7 @@ export const authService = {
     };
   },
 
-  getAuthHeader() {
+  getAuthHeaders() {
     return {
       Authorization: `Bearer ${localStorage.getItem('authToken')}`
     };
