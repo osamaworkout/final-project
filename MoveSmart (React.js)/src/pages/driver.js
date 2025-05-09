@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import "../Assets/Styles/driver.css";
 import api from "../services/api";
 
@@ -7,6 +7,7 @@ const DriverManagement = () => {
   const [drivers, setDrivers] = useState([]);
   const [filter, setFilter] = useState("all");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchDrivers();
@@ -15,8 +16,16 @@ const DriverManagement = () => {
   async function fetchDrivers() {
     setIsLoading(true);
     try {
-      const { data } = await api.get("/api/Drivers/All");
-      setDrivers(data);
+      const { data } = await api.get("/Drivers/All");
+      const rawDrivers = data?.$values || [];
+      const normalizedDrivers = rawDrivers.map((d) => ({
+        id: d.driverID,
+        name: d.name,
+        phone: d.phone,
+        carNumber: d.vehicleID ? d.vehicleID.toString() : "غير محدد",
+        status: d.status === 0 ? "متاح" : "غير متاح",
+      }));
+      setDrivers(normalizedDrivers);
     } catch (error) {
       console.error("Error fetching drivers:", error);
     } finally {
@@ -27,7 +36,7 @@ const DriverManagement = () => {
   async function toggleStatus(event, driverId) {
     event.stopPropagation();
     try {
-      await api.put(`/api/Drivers/ByID/{driverID}`);
+      await api.put(`/Drivers/ByID/${driverId}`);
       fetchDrivers();
     } catch (error) {
       console.error("Error updating driver status:", error);
@@ -37,13 +46,14 @@ const DriverManagement = () => {
   async function addDriver() {
     const newDriver = {
       name: `السائق ${Math.floor(Math.random() * 100)}`,
-      carNumber: `01204515${Math.floor(Math.random() * 100)}`,
       phone: `010${Math.floor(Math.random() * 10000000)}`,
-      status: "متاح",
+      nationalNo: `${Math.floor(Math.random() * 10000000000000)}`,
+      status: 0,
+      vehicleID: 1, // أو أي رقم افتراضي حسب النظام عندك
     };
 
     try {
-      await api.post("/api/Drivers", newDriver);
+      await api.post("/Drivers", newDriver);
       fetchDrivers();
     } catch (error) {
       console.error("Error adding driver:", error);
@@ -55,16 +65,13 @@ const DriverManagement = () => {
   );
 
   const handleDriverClick = (driver) => {
-    localStorage.setItem("selectedDriver", JSON.stringify(driver));
-    window.location.href = `/driver_manege.html?id=${driver.id}`;
+    navigate(`/driverDetails/${driver.id}`);
   };
 
   return (
     <div className="container">
-        <h2 className="h1">إدارة السائقين</h2>
-        <p className="h2">
-          إجمالي السائقين: {filteredDrivers.length}
-        </p>
+      <h2 className="h1">إدارة السائقين</h2>
+      <p className="h2">إجمالي السائقين: {filteredDrivers.length}</p>
 
       <div className="controls">
         <button onClick={addDriver}>➕ إضافة سائق</button>

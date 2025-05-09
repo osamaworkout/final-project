@@ -42,7 +42,7 @@ const Login = () => {
         
         // التوجيه حسب الدور
         switch(result.data.role) {
-          case 0:
+          case "SuperUser":
             navigate("/role0");
             break;
           case 1:

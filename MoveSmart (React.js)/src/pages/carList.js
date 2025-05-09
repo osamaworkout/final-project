@@ -11,11 +11,19 @@ const CarsPage = () => {
 
   const [showPopup, setShowPopup] = useState(false);
   const [newCarData, setNewCarData] = useState({
-    id: "",
-    brand: "",
-    model: "",
-    type: "",
-    hospital: "",
+    busID: "",
+    brandName: "",
+    modelName: "",
+    availableSpace: "",
+    capacity: "",
+    plateNumbers: "",
+    associatedTask: "",
+    totalKilometersMoved: "",
+    fuelType: "",
+    fuelConsumptionRate: "",
+    oilConsumptionRate: "",
+    vehicleType: "",
+    associatedHospital: "",
     status: "متاحة",
   });
 
@@ -30,12 +38,21 @@ const CarsPage = () => {
   const loadCars = async () => {
     try {
       const response = await api.get("Buses/All");
-      const data = response.data;
-      if (!Array.isArray(data)) {
-        console.error("البيانات المستلمة ليست في شكل مصفوفة", data);
-        return;
-      }
-      setCars(data);
+      const rawList = response.data?.$values || [];
+
+      const formattedCars = rawList.map((item) => {
+        const vehicle = item.vehicle || {};
+        return {
+          busID: item.busID || "",
+          brandName: vehicle.brandName || "",
+          modelName: vehicle.modelName || "",
+          vehicleType: vehicle.vehicleType?.toString() || "",
+          associatedHospital: vehicle.associatedHospital || "",
+          status: vehicle.status === 0 ? "متاحة" : "غير متاحة",
+        };
+      });
+
+      setCars(formattedCars);
     } catch (error) {
       console.error("خطأ في جلب البيانات:", error);
     }
@@ -46,11 +63,11 @@ const CarsPage = () => {
     if (searchTerm) {
       list = list.filter(
         (car) =>
-          car.id.includes(searchTerm) ||
-          car.brand.toLowerCase().includes(searchTerm) ||
-          car.model.toLowerCase().includes(searchTerm) ||
-          car.type.toLowerCase().includes(searchTerm) ||
-          car.hospital.toLowerCase().includes(searchTerm) ||
+          car.busID.includes(searchTerm) ||
+          car.brandName.toLowerCase().includes(searchTerm) ||
+          car.modelName.toLowerCase().includes(searchTerm) ||
+          car.vehicleType.toLowerCase().includes(searchTerm) ||
+          car.associatedHospital.toLowerCase().includes(searchTerm) ||
           car.status.toLowerCase().includes(searchTerm)
       );
     }
@@ -67,19 +84,52 @@ const CarsPage = () => {
 
   const handleSubmit = async () => {
     try {
-      await api.post("/api/Buses", newCarData);
+      const payload = {
+        busID: Number(newCarData.busID),
+        capacity: Number(newCarData.capacity) || 0,
+        availableSpace: Number(newCarData.availableSpace) || 0,
+        vehicleID: Number(newCarData.vehicleID) || 0, // جديد
+        vehicle: {
+          vehicleID: Number(newCarData.vehicleID) || 0,
+          brandName: newCarData.brandName || "",
+          modelName: newCarData.modelName || "",
+          plateNumbers: newCarData.plateNumbers || "",
+          vehicleType: Number(newCarData.vehicleType) || 0,
+          associatedHospital: newCarData.associatedHospital || "",
+          associatedTask: newCarData.associatedTask || "",
+          status: newCarData.status === "متاحة" ? 0 : 1,
+          totalKilometersMoved: Number(newCarData.totalKilometersMoved) || 0,
+          fuelType: Number(newCarData.fuelType) || 0,
+          fuelConsumptionRate: Number(newCarData.fuelConsumptionRate) || 0,
+          oilConsumptionRate: Number(newCarData.oilConsumptionRate) || 0,
+        },
+      };
+
+      console.log("📦 البيانات النهائية:", payload);
+
+      await api.post("/Buses", payload);
       setShowPopup(false);
       loadCars();
       setNewCarData({
-        id: "",
-        brand: "",
-        model: "",
-        type: "",
-        hospital: "",
+        busID: "",
+        brandName: "",
+        modelName: "",
+        capacity: "",
+        availableSpace: "",
+        vehicleID: "",
+        plateNumbers: "",
+        vehicleType: "",
+        fuelType: "",
+        fuelConsumptionRate: "",
+        oilConsumptionRate: "",
+        associatedHospital: "",
+        associatedTask: "",
+        totalKilometersMoved: "",
         status: "متاحة",
       });
     } catch (error) {
       console.error("فشل في إضافة السيارة:", error);
+      alert("حدث خطأ أثناء إضافة السيارة. تأكد من إدخال كل البيانات المطلوبة.");
     }
   };
 
@@ -95,21 +145,25 @@ const CarsPage = () => {
           <div key={index} className="card">
             <p>
               <strong>رقم السيارة:</strong>{" "}
-              <Link to={`/car-management/${car.id}`}>{car.id}</Link> {/* ⬅️ التعديل */}
+              <Link to={`/car-management/${car.busID}`}>{car.busID}</Link>
             </p>
             <p>
-              <strong>الماركة:</strong> {car.brand}
+              <strong>الماركة:</strong> {car.brandName}
             </p>
             <p>
-              <strong>الموديل:</strong> {car.model}
+              <strong>الموديل:</strong> {car.modelName}
             </p>
             <p>
-              <strong>النوع:</strong> {car.type}
+              <strong>النوع:</strong> {car.vehicleType}
             </p>
             <p>
-              <strong>المستشفى:</strong> {car.hospital}
+              <strong>المستشفى:</strong> {car.associatedHospital}
             </p>
-            <p className={`status ${car.status === "متاحة" ? "active" : "inactive"}`}>
+            <p
+              className={`status ${
+                car.status === "متاحة" ? "active" : "inactive"
+              }`}
+            >
               <strong>الحالة:</strong> {car.status}
             </p>
           </div>
@@ -150,12 +204,98 @@ const CarsPage = () => {
         <div className="popup-overlay">
           <div className="popup">
             <h3>إضافة سيارة جديدة</h3>
-            <input name="id" placeholder="رقم السيارة" onChange={handleInputChange} value={newCarData.id} />
-            <input name="brand" placeholder="الماركة" onChange={handleInputChange} value={newCarData.brand} />
-            <input name="model" placeholder="الموديل" onChange={handleInputChange} value={newCarData.model} />
-            <input name="type" placeholder="النوع" onChange={handleInputChange} value={newCarData.type} />
-            <input name="hospital" placeholder="المستشفى" onChange={handleInputChange} value={newCarData.hospital} />
-            <select name="status" onChange={handleInputChange} value={newCarData.status}>
+            <input
+              name="vehicleID"
+              placeholder="رقم المركبة"
+              onChange={handleInputChange}
+              value={newCarData.vehicleID}
+            />
+            <input
+              name="busID"
+              type="number"
+              placeholder="رقم السيارة"
+              onChange={handleInputChange}
+              value={newCarData.busID}
+            />
+            <input
+              name="brandName"
+              placeholder="الماركة"
+              onChange={handleInputChange}
+              value={newCarData.brandName}
+            />
+            <input
+              name="modelName"
+              placeholder="الموديل"
+              onChange={handleInputChange}
+              value={newCarData.modelName}
+            />
+            <input
+              name="capacity"
+              type="number"
+              placeholder="سعة الركاب"
+              onChange={handleInputChange}
+              value={newCarData.capacity}
+            />
+            <input
+              name="plateNumbers"
+              placeholder="رقم اللوحة"
+              onChange={handleInputChange}
+              value={newCarData.plateNumbers}
+            />
+            <input
+              name="associatedTask"
+              placeholder="الوظيفة"
+              onChange={handleInputChange}
+              value={newCarData.associatedTask}
+            />
+            <input
+              name="totalKilometersMoved"
+              placeholder="الكيلومترات المقطوعة"
+              onChange={handleInputChange}
+              value={newCarData.totalKilometersMoved}
+            />
+            <input
+              name="fuelType"
+              placeholder="نوع الوقود"
+              onChange={handleInputChange}
+              value={newCarData.fuelType}
+            />
+            <input
+              name="fuelConsumptionRate"
+              placeholder="معدل استهلاك الوقود"
+              onChange={handleInputChange}
+              value={newCarData.fuelConsumptionRate}
+            />
+            <input
+              name="oilConsumptionRate"
+              placeholder="معدل استهلاك الزيت"
+              onChange={handleInputChange}
+              value={newCarData.oilConsumptionRate}
+            />
+            <input
+              name="availableSpace"
+              type="number"
+              placeholder="الأماكن المتاحة"
+              onChange={handleInputChange}
+              value={newCarData.availableSpace}
+            />
+            <input
+              name="vehicleType"
+              placeholder="نوع المركبة"
+              onChange={handleInputChange}
+              value={newCarData.vehicleType}
+            />
+            <input
+              name="associatedHospital"
+              placeholder="المستشفى"
+              onChange={handleInputChange}
+              value={newCarData.associatedHospital}
+            />
+            <select
+              name="status"
+              onChange={handleInputChange}
+              value={newCarData.status}
+            >
               <option value="متاحة">متاحة</option>
               <option value="غير متاحة">غير متاحة</option>
             </select>
