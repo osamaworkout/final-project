@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../Assets/Styles/consumables.css";
+import api from "../services/api";
+
 
 const PartsPage = () => {
   const [parts, setParts] = useState([]);

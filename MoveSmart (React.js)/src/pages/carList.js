@@ -145,7 +145,7 @@ const CarsPage = () => {
           <div key={index} className="card">
             <p>
               <strong>رقم السيارة:</strong>{" "}
-              <Link to={`/car-management/${car.busID}`}>{car.busID}</Link>
+              <Link to={`/carDetails/${car.busID}`}>{car.busID}</Link>
             </p>
             <p>
               <strong>الماركة:</strong> {car.brandName}

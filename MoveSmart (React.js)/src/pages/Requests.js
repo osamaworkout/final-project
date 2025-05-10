@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../Assets/Styles/RequestsPage.css";
+import api from "../services/api";
+
 
 const RequestsPage = () => {
   const [requests, setRequests] = useState([]);

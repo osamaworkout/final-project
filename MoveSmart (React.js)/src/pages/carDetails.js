@@ -13,10 +13,31 @@ const CarManagement = () => {
     if (!busID) return;
 
     api
-      .get(`/api/Buses/ByID/${busID}`)
+      .get(`/Buses/ByID/${busID}`)
       .then((res) => {
-        setCarData(res.data);
-        setFormData(res.data); // ننسخ البيانات للفورم
+        console.log("Car data loaded:", res.data);
+        const carData = res.data;
+        const vehicle = carData.vehicle;
+
+        const mappedData = {
+          carNumber: vehicle.plateNumbers,
+          carBrand: vehicle.brandName,
+          carModel: vehicle.modelName,
+          carType: vehicle.vehicleType,
+          carCondition: vehicle.status,
+          carFunction: vehicle.associatedTask,
+          hospital: vehicle.associatedHospital,
+          fuelConsumption: vehicle.fuelConsumptionRate,
+          oilConsumption: vehicle.oilConsumptionRate,
+          fuelType: vehicle.fuelType,
+          driverName: carData.driverName || "",     // لو دي مش موجودة في الـ API احذفهم
+          driverPhone: carData.driverPhone || "",
+          driverId: carData.driverId || "",
+        };
+
+        setCarData(carData);
+        setFormData(mappedData); // ننسخ البيانات للفورم
+        // console.log("Form data initialized:", mappedData);
       })
       .catch((err) => {
         console.error("Error loading car data:", err);
@@ -35,7 +56,7 @@ const CarManagement = () => {
     if (!busID) return;
 
     api
-      .put(`/api/Buses/${busID}`, formData)
+      .put(`/Buses/${busID}`, formData)
       .then(() => {
         alert("✅ تم حفظ التعديلات بنجاح");
       })
@@ -128,22 +149,22 @@ const CarManagement = () => {
           <h2 className="car-title">إدارة السيارات</h2>
           <div className="car-info">
             <img
-              src="/img/car-placeholder.svg"
+              // src="/img/car-placeholder.svg"
               alt="صورة السيارة"
               className="profile-pic"
             />
             <div className="driver-details-container">
               <h2 id="car-number">رقم السيارة</h2>
-              <p id="car-make">الماركة: {carData?.carBrand || "غير متوفر"}</p>
-              <p id="car-model">الموديل: {carData?.carModel || "غير متوفر"}</p>
-              <p id="car-type">نوع السيارة: {carData?.carType || "غير متوفر"}</p>
+              <p id="car-make">الماركة: {carData?.vehicle?.brandName || "غير متوفر"}</p>
+              <p id="car-model">الموديل: {carData?.vehicle?.modelName || "غير متوفر"}</p>
+              <p id="car-type">نوع السيارة: {carData?.vehicle?.vehicleType || "غير متوفر"}</p>
             </div>
           </div>
 
           <div className="km-box">
             <p>
               إجمالي الكيلومترات:{" "}
-              <span id="total-km">{carData?.totalKM || 0} KM</span>
+              <span id="total-km">{carData?.totalKilometersMoved || 0} KM</span>
             </p>
           </div>
         </div>

@@ -16,7 +16,7 @@ import Subscription from '../pages/Subscription'
 import PatrolsList from '../pages/patrolsList'
 // import Subdetail from '../pages/subscribeDetail'
 // import Patroldetail from '../pages/patrolDetails'
-// import Cardetail from '../pages/carDetails'
+import Cardetail from '../pages/carDetails'
 // import Driverdetail from '../pages/driverDetails'
 
 export default function AppRoutes() {
@@ -32,10 +32,10 @@ export default function AppRoutes() {
         <Route path='/patrolsList' element={<PatrolsList />} />
         <Route path='/consumables' element={<Consumables />} />
         <Route path='/spareParts' element={<SpareParts />} />
-        {/* <Route path='/sub-detail' element={<Subdetail />} />
-        <Route path='/cardetail' element={<Cardetail />} />
-        <Route path='/driverdetail' element={<Driverdetail />} />
-        <Route path='/patroldetail' element={<Patroldetail />} /> */}
+        {/* <Route path='/sub-detail' element={<Subdetail />} /> */}
+        <Route path='/cardetails/:busID' element={<Cardetail />} />
+        {/* <Route path='/driverdetail' element={<Driverdetail />} /> */}
+        {/* <Route path='/patroldetail' element={<Patroldetail />} /> */}
       </Route>
     </Routes>
   );
